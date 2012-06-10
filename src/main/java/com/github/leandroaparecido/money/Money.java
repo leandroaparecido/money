@@ -1,8 +1,16 @@
 package com.github.leandroaparecido.money;
 
+import java.io.*;
+import java.math.*;
 import java.util.*;
 
-public class Money implements Comparable<Money> {
+import com.google.common.base.*;
+
+public final class Money implements Serializable, Comparable<Money> {
+
+	private static final long serialVersionUID = 3720810196241002650L;
+
+	public static final Money ZERO = new Money(0L);
 
 	private final long amount;
 
@@ -10,23 +18,48 @@ public class Money implements Comparable<Money> {
 		this.amount = amount;
 	}
 
-	public static Money of(long major, long minor) {
+	public static Money of(long major, int minor) {
+		Preconditions.checkArgument(minor < 100);
+		Preconditions.checkArgument(minor >= 0);
 		if (major != 0) {
 			minor = (int)Math.signum(major) * minor;
 		}
 		return new Money(major * 100 + minor);
 	}
 
-	public Money add(Money arg) {
+	public static Money of(BigDecimal v) {
+		Preconditions.checkArgument(v.scale() <= 2);
+		if (v.scale() == 1) {
+			return new Money(v.unscaledValue().longValue() * 10);
+		}
+		return new Money(v.unscaledValue().longValue());
+	}
+
+	public static Money sum(Iterable<Money> monies) {
+		Preconditions.checkNotNull(monies);
+		long total = 0L;
+		for (Money money : monies) {
+			total += money.amount;
+		}
+		return new Money(total);
+	}
+
+	public Money plus(Money arg) {
+		Preconditions.checkNotNull(arg);
 		return new Money(amount + arg.amount);
 	}
 
-	public Money add(long major, long minor) {
+	public Money plus(long major, int minor) {
 		return new Money(amount + major * 100 + minor);
 	}
 
-	public Money subtract(Money arg) {
+	public Money minus(Money arg) {
+		Preconditions.checkNotNull(arg);
 		return new Money(amount - arg.amount);
+	}
+
+	public Money minus(long major, int minor) {
+		return new Money(amount - major * 100 - minor);
 	}
 
 	public Money negate() {
@@ -51,12 +84,46 @@ public class Money implements Comparable<Money> {
 		return result;
 	}
 
-	public boolean greaterThan(Money arg) {
+	public boolean isGreaterThan(Money arg) {
+		Preconditions.checkNotNull(arg);
 		return compareTo(arg) > 0;
 	}
 
-	public boolean lessThan(Money arg) {
+	public boolean isLessThan(Money arg) {
+		Preconditions.checkNotNull(arg);
 		return compareTo(arg) < 0;
+	}
+
+	public Money abs() {
+		return isPositive() ? this : negate();
+	}
+
+	public long getAmountMajor() {
+		return amount / 100;
+	}
+
+	public long getAmountMinor() {
+		return Math.abs(amount % 100);
+	}
+
+	public boolean isZero() {
+		return amount == 0;
+	}
+
+	public boolean isPositive() {
+		return amount > 0;
+	}
+
+	public boolean isPositiveOrZero() {
+		return amount >= 0;
+	}
+
+	public boolean isNegative() {
+		return amount < 0;
+	}
+
+	public boolean isNegativeOrZero() {
+		return amount <= 0;
 	}
 
 	@Override
@@ -92,6 +159,6 @@ public class Money implements Comparable<Money> {
 
 	@Override
 	public String toString() {
-		return String.format("%d,%02d", amount / 100, Math.abs(amount % 100));
+		return String.format("%d,%02d", getAmountMajor(), getAmountMinor());
 	}
 }
