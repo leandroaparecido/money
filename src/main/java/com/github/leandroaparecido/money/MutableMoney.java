@@ -10,6 +10,10 @@ public class MutableMoney implements Serializable, Comparable<MutableMoney> {
 
 	private static final long serialVersionUID = -4601291165921669519L;
 
+	public static final MutableMoney ZERO = new MutableMoney(0L);
+	public static final MutableMoney ONE = new MutableMoney(1L);
+	public static final MutableMoney TEN = new MutableMoney(10L);
+
 	private long amount;
 
 	private MutableMoney(long amount) {
@@ -141,6 +145,10 @@ public class MutableMoney implements Serializable, Comparable<MutableMoney> {
 
 	public boolean isNegativeOrZero() {
 		return amount <= 0;
+	}
+
+	public double percentageOf(MutableMoney arg) {
+		return amount * 100.0 / arg.amount / 100;
 	}
 
 	public MutableMoney setMajor(long major) {

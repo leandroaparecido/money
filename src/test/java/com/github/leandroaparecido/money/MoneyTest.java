@@ -81,4 +81,12 @@ public class MoneyTest {
 		s = "890";
 		assertEquals(Money.of(890, 0), Money.parse(s));
 	}
+
+	@Test
+	public void testPercentageOf() {
+		Money money = Money.ONE;
+		assertEquals(0.1, money.percentageOf(Money.TEN), 0.0001);
+		money = Money.of(774, 27);
+		assertEquals(0.0042, money.percentageOf(Money.of(182737, 9)), 0.0001);
+	}
 }

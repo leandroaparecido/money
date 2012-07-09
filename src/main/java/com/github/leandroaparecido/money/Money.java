@@ -149,6 +149,10 @@ public final class Money implements Serializable, Comparable<Money> {
 		return amount <= 0;
 	}
 
+	public double percentageOf(Money arg) {
+		return amount * 100.0 / arg.amount / 100;
+	}
+
 	@Override
 	public int compareTo(Money o) {
 		long result = amount - o.amount;

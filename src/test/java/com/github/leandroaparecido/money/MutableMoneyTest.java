@@ -76,6 +76,14 @@ public class MutableMoneyTest {
 	}
 
 	@Test
+	public void testPercentageOf() {
+		MutableMoney money = MutableMoney.ONE;
+		assertEquals(0.1, money.percentageOf(MutableMoney.TEN), 0.0001);
+		money = MutableMoney.of(774, 27);
+		assertEquals(0.0042, money.percentageOf(MutableMoney.of(182737, 9)), 0.0001);
+	}
+
+	@Test
 	public void testSetMajor() {
 		MutableMoney money = MutableMoney.of(87, 30);
 		assertEquals(MutableMoney.of(20, 30), money.setMajor(20));
