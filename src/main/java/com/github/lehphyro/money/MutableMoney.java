@@ -1,4 +1,4 @@
-package com.github.leandroaparecido.money;
+package com.github.lehphyro.money;
 
 import java.io.*;
 import java.math.*;
