@@ -6,38 +6,34 @@ import java.util.*;
 
 import com.google.common.base.*;
 
-public final class Money implements Serializable, Comparable<Money> {
+public class MutableMoney implements Serializable, Comparable<MutableMoney> {
 
-	private static final long serialVersionUID = 3720810196241002650L;
+	private static final long serialVersionUID = -4601291165921669519L;
 
-	public static final Money ZERO = new Money(0L);
-	public static final Money ONE = new Money(1L);
-	public static final Money TEN = new Money(10L);
+	private long amount;
 
-	private final long amount;
-
-	private Money(long amount) {
+	private MutableMoney(long amount) {
 		this.amount = amount;
 	}
 
-	public static Money of(long major, int minor) {
+	public static MutableMoney of(long major, int minor) {
 		Preconditions.checkArgument(minor < 100);
 		Preconditions.checkArgument(minor >= 0);
 		if (major != 0) {
 			minor = (int)Math.signum(major) * minor;
 		}
-		return new Money(major * 100 + minor);
+		return new MutableMoney(major * 100 + minor);
 	}
 
-	public static Money of(BigDecimal v) {
+	public static MutableMoney of(BigDecimal v) {
 		Preconditions.checkArgument(v.scale() <= 2);
 		if (v.scale() == 1) {
-			return new Money(v.unscaledValue().longValue() * 10);
+			return new MutableMoney(v.unscaledValue().longValue() * 10);
 		}
-		return new Money(v.unscaledValue().longValue());
+		return new MutableMoney(v.unscaledValue().longValue());
 	}
 
-	public static Money parse(String s) {
+	public static MutableMoney parse(String s) {
 		Preconditions.checkNotNull(s);
 		String trimmed = s.trim();
 		Preconditions.checkArgument(!trimmed.isEmpty(), "Cannot parse empty string");
@@ -50,75 +46,73 @@ public final class Money implements Serializable, Comparable<Money> {
 		return of(major, minor);
 	}
 
-	public static Money sum(Iterable<Money> monies) {
-		Preconditions.checkNotNull(monies);
-		long total = 0L;
-		for (Money money : monies) {
-			total += money.amount;
-		}
-		return new Money(total);
+	public Money immutableCopy() {
+		return Money.of(amount);
 	}
 
-	public MutableMoney mutableCopy() {
-		return MutableMoney.of(amount);
+	static MutableMoney of(long amount) {
+		return new MutableMoney(amount);
 	}
 
-	static Money of(long amount) {
-		return new Money(amount);
-	}
-
-	public Money plus(Money arg) {
+	public MutableMoney plus(MutableMoney arg) {
 		Preconditions.checkNotNull(arg);
-		return new Money(amount + arg.amount);
+		amount += arg.amount;
+		return this;
 	}
 
-	public Money plus(long major, int minor) {
-		return new Money(amount + major * 100 + minor);
+	public MutableMoney plus(long major, int minor) {
+		amount += major * 100 + minor;
+		return this;
 	}
 
-	public Money minus(Money arg) {
+	public MutableMoney minus(MutableMoney arg) {
 		Preconditions.checkNotNull(arg);
-		return new Money(amount - arg.amount);
+		amount -= arg.amount;
+		return this;
 	}
 
-	public Money minus(long major, int minor) {
-		return new Money(amount - major * 100 - minor);
+	public MutableMoney minus(long major, int minor) {
+		amount -= major * 100 + minor;
+		return this;
 	}
 
-	public Money negate() {
-		return new Money(-amount);
+	public MutableMoney negate() {
+		amount = -amount;
+		return this;
 	}
 
-	public Money multiply(long arg) {
-		return new Money(amount * arg);
+	public MutableMoney multiply(long arg) {
+		amount *= arg;
+		return this;
 	}
 
-	public List<Money> divide(int denominator) {
-		List<Money> result = new ArrayList<Money>(denominator);
+	public List<MutableMoney> divide(int denominator) {
+		List<MutableMoney> result = new ArrayList<MutableMoney>(denominator);
 		long simpleResult = amount / denominator;
 		int remainder = (int) (amount - simpleResult * denominator);
 		for (int i = 0; i < denominator; i++) {
 			if (i < remainder) {
-				result.add(new Money(simpleResult + 1));
+				result.add(new MutableMoney(simpleResult + 1));
 			} else {
-				result.add(new Money(simpleResult));
+				result.add(new MutableMoney(simpleResult));
 			}
 		}
 		return result;
 	}
 
-	public boolean isGreaterThan(Money arg) {
+	public boolean isGreaterThan(MutableMoney arg) {
 		Preconditions.checkNotNull(arg);
 		return compareTo(arg) > 0;
 	}
 
-	public boolean isLessThan(Money arg) {
+	public boolean isLessThan(MutableMoney arg) {
 		Preconditions.checkNotNull(arg);
 		return compareTo(arg) < 0;
 	}
 
-	public Money abs() {
-		return isPositive() ? this : negate();
+	public MutableMoney abs() {
+		amount = Math.abs(amount);
+		return this;
 	}
 
 	public long getAmountMajor() {
@@ -149,8 +143,22 @@ public final class Money implements Serializable, Comparable<Money> {
 		return amount <= 0;
 	}
 
+	public MutableMoney setMajor(long major) {
+		int minor = getAmountMinor();
+		amount = major * 100 + minor;
+		return this;
+	}
+
+	public MutableMoney setMinor(int minor) {
+		Preconditions.checkArgument(minor < 100);
+		Preconditions.checkArgument(minor >= 0);
+		long major = getAmountMajor();
+		amount = major * 100 + minor;
+		return this;
+	}
+
 	@Override
-	public int compareTo(Money o) {
+	public int compareTo(MutableMoney o) {
 		long result = amount - o.amount;
 		if (result > 0) {
 			return 1;
@@ -176,10 +184,10 @@ public final class Money implements Serializable, Comparable<Money> {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof Money)) {
+		if (!(obj instanceof MutableMoney)) {
 			return false;
 		}
-		Money other = (Money) obj;
+		MutableMoney other = (MutableMoney) obj;
 		if (amount != other.amount) {
 			return false;
 		}
