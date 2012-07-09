@@ -11,6 +11,8 @@ public final class Money implements Serializable, Comparable<Money> {
 	private static final long serialVersionUID = 3720810196241002650L;
 
 	public static final Money ZERO = new Money(0L);
+	public static final Money ONE = new Money(1L);
+	public static final Money TEN = new Money(10L);
 
 	private final long amount;
 
@@ -33,6 +35,19 @@ public final class Money implements Serializable, Comparable<Money> {
 			return new Money(v.unscaledValue().longValue() * 10);
 		}
 		return new Money(v.unscaledValue().longValue());
+	}
+
+	public static Money parse(String s) {
+		Preconditions.checkNotNull(s);
+		String trimmed = s.trim();
+		Preconditions.checkArgument(!trimmed.isEmpty(), "Cannot parse empty string");
+		String[] parts = trimmed.split(",");
+		long major = Long.parseLong(parts[0]);
+		int minor = 0;
+		if (parts.length > 1) {
+			minor = Integer.parseInt(parts[1]);
+		}
+		return of(major, minor);
 	}
 
 	public static Money sum(Iterable<Money> monies) {

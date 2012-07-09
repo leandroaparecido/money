@@ -72,4 +72,13 @@ public class MoneyTest {
 		assertEquals(Money.of(2, 50), Money.of(BigDecimal.valueOf(2.5)));
 		assertEquals(Money.of(2, 56), Money.of(BigDecimal.valueOf(2.56)));
 	}
+
+	@Test
+	public void testParse() {
+		String s = "1,47";
+		assertEquals(Money.of(1, 47), Money.parse(s));
+
+		s = "890";
+		assertEquals(Money.of(890, 0), Money.parse(s));
+	}
 }
